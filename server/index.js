@@ -1,9 +1,13 @@
 require("dotenv").config();
 const express = require("express");
-const allowed = (process.env.CORS_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
-
+const cors = require("cors");
 
 const connectDB = require("./config/db");
+
+const allowed = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 const app = express();
 
@@ -13,7 +17,7 @@ app.use(
   cors({
     origin: function (origin, cb) {
       if (!origin) return cb(null, true); // postman/curl
-      if (allowed.length === 0) return cb(null, true); // agar env berilmagan bo'lsa
+      if (allowed.length === 0) return cb(null, true); // env bo'lmasa ham ruxsat
       if (allowed.includes(origin)) return cb(null, true);
       return cb(new Error("Not allowed by CORS: " + origin));
     },
@@ -30,8 +34,6 @@ app.use("/api/wallet", require("./routes/wallet.routes"));
 app.use("/api/bonus", require("./routes/bonus.routes"));
 app.use("/api/pay", require("./routes/pay.routes"));
 
-
-
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, app: "eco-scan" });
 });
@@ -39,9 +41,7 @@ app.get("/api/health", (req, res) => {
 connectDB()
   .then(() => {
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log("API running → http://localhost:" + PORT);
-    });
+    app.listen(PORT, () => console.log("API running → http://localhost:" + PORT));
   })
   .catch((err) => {
     console.error("DB connect failed:", err.message);
